@@ -1,8 +1,11 @@
 import {
   BrowserRouter,
   Routes,
-  Route
+  Route,
+  useLocation
 } from "react-router-dom";
+
+import { useEffect, useState } from "react";
 
 import { AuthProvider, useAuth } from "./context/AuthContext";
 
@@ -19,6 +22,23 @@ import "./App.css";
 
 function AppContent() {
   const { user, loading, logout } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    function handleKeyDown(event) {
+      if (event.key === "Escape") setSidebarOpen(false);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [sidebarOpen]);
 
   if (loading) {
     return <div className="loading-screen">Loading CamWatch...</div>;
@@ -29,11 +49,21 @@ function AppContent() {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${sidebarOpen ? "sidebar-open" : ""}`}>
       <Sidebar />
 
+      {sidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       <div className="main-area">
-        <Topbar onLogout={logout} />
+        <Topbar
+          onLogout={logout}
+          onMenuToggle={() => setSidebarOpen((value) => !value)}
+        />
 
         <Routes>
           <Route path="/" element={<Dashboard />} />

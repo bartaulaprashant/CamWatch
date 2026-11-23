@@ -7,3 +7,4 @@ pwdlib==0.4.2
 aiortc==1.16.0
 opencv-python==5.1.0.95
 av==19.0.2
+python-dotenv==1.2.4

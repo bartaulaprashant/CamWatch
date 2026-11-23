@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Bell, Search, LogOut } from "lucide-react";
+import { Bell, Search, LogOut, Menu } from "lucide-react";
 
-export default function Topbar({ onLogout }) {
+export default function Topbar({ onLogout, onMenuToggle }) {
   const [loggingOut, setLoggingOut] = useState(false);
 
   async function handleLogout() {
@@ -20,6 +20,13 @@ export default function Topbar({ onLogout }) {
   return (
     <header className="topbar">
       <div className="breadcrumb">
+        <button
+          className="icon-button menu-toggle"
+          aria-label="Toggle navigation menu"
+          onClick={onMenuToggle}
+        >
+          <Menu size={19} />
+        </button>
         <span>Workspace</span>
         <span className="breadcrumb-separator">/</span>
         <strong>Overview</strong>

@@ -2,11 +2,18 @@ import os
 import asyncio
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+from dotenv import load_dotenv
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(PROJECT_ROOT / ".env")
+
 from audio_manager import AudioManager
 from fastapi import Depends
 
 from fastapi import FastAPI, HTTPException
 from starlette.middleware.sessions import SessionMiddleware
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
@@ -91,13 +98,26 @@ session_secret = os.getenv("CAMWATCH_SESSION_SECRET")
 if not session_secret:
     raise RuntimeError("CAMWATCH_SESSION_SECRET is not configured")
 
+# Use CAMWATCH_HTTPS_ONLY=false when the browser frontend is served over
+# plain HTTP on a LAN. HTTPS deployments should keep the default enabled.
+cookie_https_only = os.getenv(
+    "CAMWATCH_HTTPS_ONLY",
+    "true"
+).strip().lower() in ("1", "true", "yes", "on")
+
+print(
+    "Session cookie Secure flag:",
+    "ENABLED" if cookie_https_only else "DISABLED",
+    f"(CAMWATCH_HTTPS_ONLY={os.getenv('CAMWATCH_HTTPS_ONLY', 'unset')})"
+)
+
 app.add_middleware(
     SessionMiddleware,
     secret_key=session_secret,
     session_cookie="camwatch_session",
     max_age=60 * 60 * 24 * 7,
     same_site="lax",
-    https_only=True
+    https_only=cookie_https_only
 )
 
 
