@@ -79,7 +79,9 @@ class AudioManager:
         device = os.getenv("CAMWATCH_AUDIO_DEVICE", "default")
 
         if backend == "auto":
-            if shutil.which("pactl"):
+            if shutil.which("pactl") or shutil.which("pw-cli"):
+                # pactl = PulseAudio, pw-cli = PipeWire (which provides
+                # PulseAudio-compatible capture via pipewire-pulse)
                 backend = "pulse"
             elif platform.system() == "Darwin":
                 backend = "avfoundation"
