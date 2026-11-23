@@ -1,7 +1,22 @@
+import { useState } from "react";
+import { Bell, Search, LogOut } from "lucide-react";
 
-import { Bell, Search, Menu } from "lucide-react";
+export default function Topbar({ onLogout }) {
+  const [loggingOut, setLoggingOut] = useState(false);
 
-export default function Topbar() {
+  async function handleLogout() {
+    if (loggingOut) return;
+
+    setLoggingOut(true);
+
+    try {
+      await onLogout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+      setLoggingOut(false);
+    }
+  }
+
   return (
     <header className="topbar">
       <div className="breadcrumb">
@@ -26,6 +41,15 @@ export default function Topbar() {
         </button>
 
         <div className="user-avatar">CW</div>
+
+        <button
+          className="icon-button logout-button"
+          aria-label="Logout"
+          onClick={handleLogout}
+          disabled={loggingOut}
+        >
+          <LogOut size={19} />
+        </button>
       </div>
     </header>
   );

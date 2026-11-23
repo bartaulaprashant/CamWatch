@@ -33,7 +33,7 @@ function AppContent() {
       <Sidebar />
 
       <div className="main-area">
-        <Topbar />
+        <Topbar onLogout={logout} />
 
         <Routes>
           <Route path="/" element={<Dashboard />} />

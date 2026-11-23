@@ -1464,3 +1464,17 @@
 .settings-save-button:disabled {
   opacity: 0.5;
 }
+
+.logout-button {
+  color: #d99a93;
+}
+
+.logout-button:hover {
+  color: #efaaa2;
+  background: #32201d;
+}
+
+.logout-button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
