@@ -1,7 +1,5 @@
 # CamWatch
 
-A local webcam monitoring application with live WebRTC streaming, motion detection, authenticated access, and captured-event history.
-
 CamWatch is a local security-monitoring platform that streams webcam video and audio, detects motion, records event snapshots, and provides camera status through an authenticated web dashboard.
 
 ## Features
@@ -64,11 +62,19 @@ Vite proxies `/api` requests to the backend configured in `frontend/vite.config.
 
 ## Screenshots
 
-Add screenshots inside `docs/screenshots/` and replace these placeholders:
+| Dashboard  |
+|---|
+| ![Dashboard](/docs/screenshots/dashboard.png) |
 
-- `docs/screenshots/dashboard.png`
-- `docs/screenshots/live-monitoring.png`
-- `docs/screenshots/event-history.png`
+| Live Monitoring |
+|---|
+| ![Details page](/docs/screenshots/live-monitoring.png) |
+
+| Event History |
+|---|
+| ![Details page](/docs/screenshots/event-history.png) |
+
+
 
 ## Current Limitations
 
