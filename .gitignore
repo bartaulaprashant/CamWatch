@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+
+certs/
+storage/events/
+.env
+storage/camwatch.db
+frontend/node_modules/
+frontend/dist/
+.DS_Store
+/LEARNING_README.md

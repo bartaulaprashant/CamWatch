@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>CamWatch - Live Stream</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #111827;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 20px;
+      }
+
+      video {
+        width: 100%;
+        max-width: 800px;
+        background: black;
+        border-radius: 12px;
+      }
+
+      button {
+        padding: 12px 24px;
+        margin: 15px 5px;
+        cursor: pointer;
+      }
+
+      label {
+        margin: 12px;
+      }
+
+      #status {
+        color: #9ca3af;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>CamWatch</h1>
+
+    <p id="status">Disconnected</p>
+
+    <video id="camera" autoplay playsinline muted></video>
+
+    <div>
+      <label>
+        <input type="checkbox" id="enableAudio" />
+        Enable microphone audio
+      </label>
+    </div>
+
+    <div>
+      <button id="start">Start Stream</button>
+      <button id="stop" disabled>Stop Stream</button>
+      <button id="mute" disabled>Unmute Audio</button>
+    </div>
+
+    <script>
+      const video = document.getElementById("camera");
+      const status = document.getElementById("status");
+
+      const startButton = document.getElementById("start");
+      const stopButton = document.getElementById("stop");
+      const muteButton = document.getElementById("mute");
+      const enableAudio = document.getElementById("enableAudio");
+
+      let peerConnection = null;
+
+      async function waitForIceGathering(pc) {
+        if (pc.iceGatheringState === "complete") {
+          return;
+        }
+
+        await new Promise((resolve) => {
+          function checkState() {
+            if (pc.iceGatheringState === "complete") {
+              pc.removeEventListener("icegatheringstatechange", checkState);
+
+              resolve();
+            }
+          }
+
+          pc.addEventListener("icegatheringstatechange", checkState);
+        });
+      }
+
+      async function startStream() {
+        try {
+          status.textContent = "Connecting...";
+
+          const audioEnabled = enableAudio.checked;
+
+          peerConnection = new RTCPeerConnection();
+
+          // Always receive video
+          peerConnection.addTransceiver("video", {
+            direction: "recvonly",
+          });
+
+          // Request audio only when explicitly enabled
+          if (audioEnabled) {
+            peerConnection.addTransceiver("audio", {
+              direction: "recvonly",
+            });
+          }
+
+          peerConnection.ontrack = (event) => {
+            if (event.track.kind === "video") {
+              video.srcObject = event.streams[0];
+            }
+
+            if (event.track.kind === "audio") {
+              console.log("Audio track received.");
+            }
+          };
+
+          peerConnection.onconnectionstatechange = () => {
+            status.textContent =
+              "Connection: " + peerConnection.connectionState;
+          };
+
+          const offer = await peerConnection.createOffer();
+
+          await peerConnection.setLocalDescription(offer);
+
+          await waitForIceGathering(peerConnection);
+
+          const response = await fetch("/offer", {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json",
+            },
+
+            body: JSON.stringify({
+              sdp: peerConnection.localDescription.sdp,
+              type: peerConnection.localDescription.type,
+              audio_enabled: audioEnabled,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Server rejected the WebRTC offer");
+          }
+
+          const answer = await response.json();
+
+          await peerConnection.setRemoteDescription(answer);
+
+          startButton.disabled = true;
+          stopButton.disabled = false;
+
+          enableAudio.disabled = true;
+
+          // Start muted even if audio was requested
+          video.muted = true;
+
+          muteButton.disabled = !audioEnabled;
+          muteButton.textContent = "Unmute Audio";
+
+          await video.play();
+        } catch (error) {
+          console.error(error);
+
+          status.textContent = "Connection failed: " + error.message;
+
+          stopStream();
+        }
+      }
+
+      function toggleMute() {
+        video.muted = !video.muted;
+
+        muteButton.textContent = video.muted ? "Unmute Audio" : "Mute Audio";
+      }
+
+      function stopStream() {
+        if (peerConnection) {
+          peerConnection.close();
+          peerConnection = null;
+        }
+
+        video.srcObject = null;
+        video.muted = true;
+
+        status.textContent = "Disconnected";
+
+        startButton.disabled = false;
+        stopButton.disabled = true;
+
+        enableAudio.disabled = false;
+
+        muteButton.disabled = true;
+        muteButton.textContent = "Unmute Audio";
+      }
+
+      startButton.addEventListener("click", startStream);
+
+      stopButton.addEventListener("click", stopStream);
+
+      muteButton.addEventListener("click", toggleMute);
+    </script>
+  </body>
+</html>

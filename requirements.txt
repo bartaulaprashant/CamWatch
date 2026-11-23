@@ -1,0 +1,9 @@
+fastapi==0.165.0
+uvicorn[standard]==0.54.0
+sqlalchemy==2.1.9
+pydantic==2.14.4
+starlette==1.10.0
+pwdlib==0.4.2
+aiortc==1.16.0
+opencv-python==5.1.0.95
+av==19.0.2
